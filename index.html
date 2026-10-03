@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Happy Boyfriend Day</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a3536;--ink:#fdf6ee;--soft:#bfe6df;--pink:#ff9aa8;--gold:#ffd9a6;--card:#10504f;--serif:Constantia,"Palatino Linotype",Georgia,serif;--sans:"Poppins","Segoe UI",Arial,sans-serif}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+body{background:radial-gradient(circle at 50% 0,#1a7b78,var(--bg) 65%) fixed;color:var(--ink);font-family:var(--sans);text-align:center}
+.screen{display:none;min-height:100vh;padding:28px 16px 60px;flex-direction:column;align-items:center;justify-content:center}
+.screen.on{display:flex}
+h1,h2,.q{font-family:var(--serif)}
+h1{font-size:clamp(2.2rem,6vw,3.6rem);margin:.3em 0}
+h2{font-size:1.8rem;margin:.4em 0}
+p{color:var(--soft);line-height:1.6}
+button{font:inherit;font-weight:bold;background:var(--pink);color:#3a1020;border:0;border-radius:999px;padding:12px 30px;cursor:pointer;margin:10px}
+button:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
+img.photo{max-width:min(420px,88vw);max-height:48vh;border-radius:14px;border:4px solid #fff7f0;box-shadow:0 12px 30px #0008}
+
+/* welcome */
+#env{font-size:5.5rem;background:none;padding:0;animation:bob 2s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-8px)}}
+#welcomeCard{display:none;animation:pop .7s ease}
+@keyframes pop{from{opacity:0;transform:scale(.8) translateY(30px)}}
+
+/* candy map */
+#mapWrap{width:420px;max-width:100%;margin:0 auto;position:relative}
+#mapWrap svg{position:absolute;inset:0;pointer-events:none}
+.node{position:absolute;width:68px;height:68px;margin:0;padding:0;border-radius:50%;font-size:1.5rem;border:4px solid #fff7f0;box-shadow:0 5px 0 #0006;display:flex;align-items:center;justify-content:center;flex-direction:column;line-height:1}
+.node small{font-size:.65rem;font-weight:normal;margin-top:2px}
+.node.cleared{background:var(--gold)}
+.node.current{background:var(--pink);animation:pulse 1.4s infinite}
+.node.locked{background:#3f8a85;color:#bfe6df;cursor:default;opacity:.8}
+@keyframes pulse{50%{transform:scale(1.12)}}
+.dl{position:absolute;width:90px;margin-left:-45px;font-size:.75rem;color:var(--soft)}
+
+/* modal */
+#modal{position:fixed;inset:0;background:#021a1ad9;display:none;align-items:center;justify-content:center;z-index:20;padding:16px}
+#modal.on{display:flex}
+.box{background:var(--card);border-radius:18px;padding:20px;max-width:96vw;max-height:96vh;overflow:auto}
+#board{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin:12px auto}
+.tile{background-size:200% 200%;cursor:pointer;border:3px solid transparent;border-radius:6px}
+.tile.sel{border-color:var(--gold);transform:scale(.95)}
+#board.done{gap:0}#board.done .tile{border:0;border-radius:0;cursor:default}
+
+/* celebration */
+.opt{font-size:1.3rem;padding:14px 44px}
+.opt.no{background:#7fc9bf;color:#0a3536}
+.conf{position:fixed;top:-20px;width:10px;height:16px;z-index:30;animation:fall linear forwards;pointer-events:none}
+@keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
+.q{font-size:clamp(1.5rem,4vw,2.4rem);max-width:760px;line-height:1.3}
+
+/* ahhh */
+#s-ahh{background:#2b0d1c;overflow:hidden;position:relative}
+.ah{position:fixed;font-weight:900;pointer-events:none;animation:ah 2.4s ease-out forwards;z-index:5}
+@keyframes ah{0%{transform:scale(0);opacity:0}20%{transform:scale(1.2);opacity:1}70%{transform:translateY(-70px) scale(1);opacity:1}100%{transform:translateY(-110px) scale(1.9);opacity:0}}
+#heart{position:fixed;z-index:10;width:22px;height:22px;margin:0;padding:0;background:none;color:#e0182d;font-size:20px;line-height:1;opacity:.85}
+#cat{max-width:min(480px,90vw);border-radius:14px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+</head>
+<body>
+
+<section class="screen on" id="s-welcome">
+  <button id="env" aria-label="Open the envelope">💌</button>
+  <p id="envHint">Tap the envelope</p>
+  <div id="welcomeCard">
+    <img class="photo" id="welcomePhoto" alt="Us">
+    <h1>HAPPY BOYFRIEND DAY</h1>
+    <button id="startBtn">Let's play</button>
+  </div>
+</section>
+
+<section class="screen" id="s-map">
+  <h2>Our journey</h2>
+  <p>Solve each picture to clear the level.</p>
+  <div id="mapWrap"></div>
+</section>
+
+<section class="screen" id="s-q">
+  <h1>You did it! 🎉</h1>
+  <div class="q">WILL YOU BE MY BOYFRIEND/BESTFRIEND/BRO/HUSBAND 4LYF ADU LAL?</div>
+  <div>
+    <button class="opt" id="yes">a. YES</button>
+    <button class="opt no" id="no">b. NO</button>
+  </div>
+</section>
+
+<section class="screen" id="s-ahh">
+  <img class="photo" id="cryPhoto" alt="Me crying">
+</section>
+<button id="heart" hidden aria-label="Tiny heart">♥</button>
+
+<section class="screen" id="s-final">
+  <img id="cat" alt="Dancing celebration">
+  <h1>YAY! 4LYF 💛</h1>
+</section>
+
+<div id="modal"><div class="box" id="box"></div></div>
+
+<script>
+/* =============== EDIT THIS PART =============== */
+const CONFIG = {
+  welcomePhoto: "images/welcome.jpg",
+  cryingPhoto:  "images/crying.jpg",
+  catGif:       "images/cat.gif",
+  levelPhotos:  ["images/m1.jpg","images/m2.jpg","images/m3.jpg","images/m4.jpg","images/m5.jpg",
+                 "images/m6.jpg","images/m7.jpg","images/m8.jpg","images/m9.jpg","images/m10.jpg","images/m11.jpg"],
+  captions:     ["","","","","","","","","","",""]       // optional, shown under each solved picture
+};
+/* ============================================== */
+
+const $ = id => document.getElementById(id);
+const rand = (a,b) => a + Math.random()*(b-a);
+const FALLBACK = "linear-gradient(135deg,#ff9aa8,#ffd9a6 50%,#5ce1c6)";
+let cleared = new Set(), ahhTimer = null;
+
+function show(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
+  $(id).classList.add('on'); window.scrollTo(0,0);
+  clearInterval(ahhTimer); $('heart').hidden = true;
+  if(id==='s-ahh') startAhh();
+}
+function confetti(){
+  const cols=['#ff9aa8','#ffd9a6','#5ce1c6','#7fc9bf','#fff'];
+  for(let i=0;i<90;i++){
+    const c=document.createElement('div'); c.className='conf';
+    c.style.left=rand(0,100)+'vw'; c.style.background=cols[i%5];
+    c.style.animationDuration=rand(2.5,5)+'s'; c.style.animationDelay=rand(0,1.5)+'s';
+    document.body.appendChild(c); setTimeout(()=>c.remove(),7500);
+  }
+}
+
+/* ---- 1. Welcome ---- */
+$('welcomePhoto').src = CONFIG.welcomePhoto;
+$('env').onclick = () => {
+  $('env').style.display='none'; $('envHint').style.display='none';
+  $('welcomeCard').style.display='block';
+};
+$('startBtn').onclick = () => { show('s-map'); buildMap(); };
+
+/* ---- 2. Candy-style level map ---- */
+const DATES=["22 Nov 2025","29 Nov 2025","29 Dec 2025","11 Jan 2026","14 Feb 2026","4 Mar 2026",
+             "25 Apr 2026","31 May 2026","2 Jun 2026","7 Aug 2026","29 Sep 2026"];
+function levelDate(i){ return DATES[i]; }
+function buildMap(){
+  const W=Math.min(420,window.innerWidth-32), STEP=110, N=11, H=N*STEP+40;
+  const wrap=$('mapWrap'); wrap.style.width=W+'px'; wrap.style.height=H+'px'; wrap.innerHTML='';
+  const pts=[...Array(N)].map((_,i)=>({x:W/2+(W*.26)*Math.sin(i*1.3), y:H-70-i*STEP}));
+  const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
+  svg.setAttribute('width',W); svg.setAttribute('height',H);
+  svg.innerHTML=`<polyline points="${pts.map(p=>p.x+','+p.y).join(' ')}" fill="none" stroke="#ffffff66" stroke-width="8" stroke-dasharray="2 14" stroke-linecap="round"/>`;
+  wrap.appendChild(svg);
+  let current=0; while(cleared.has(current)) current++;
+  pts.forEach((p,i)=>{
+    const b=document.createElement('button');
+    const state = cleared.has(i)?'cleared':(i===current?'current':'locked');
+    b.className='node '+state; b.style.left=(p.x-34)+'px'; b.style.top=(p.y-34)+'px';
+    b.innerHTML = state==='locked' ? '🔒' : `${i+1}<small>${state==='cleared'?'⭐⭐⭐':''}</small>`;
+    b.setAttribute('aria-label','Level '+(i+1)+', '+state);
+    if(state!=='locked') b.onclick=()=>openLevel(i);
+    wrap.appendChild(b);
+    const l=document.createElement('div'); l.className='dl'; l.textContent=levelDate(i);
+    l.style.left=p.x+'px'; l.style.top=(p.y+38)+'px'; wrap.appendChild(l);
+  });
+  setTimeout(()=>wrap.children[Math.min(current,N-1)+1].scrollIntoView({block:'center',behavior:'smooth'}),100);
+}
+
+/* ---- 3. Photo puzzle (2x2, tap two tiles to swap) ---- */
+function openLevel(i){
+  const src=CONFIG.levelPhotos[i], box=$('box');
+  const probe=new Image();
+  probe.onload = () => render(probe.naturalWidth/probe.naturalHeight);
+  probe.onerror = () => render(4/3);
+  probe.src=src;
+
+  function render(ratio){
+    const w=Math.round(Math.min(480, window.innerWidth*.85, window.innerHeight*.55*ratio));
+    const already=cleared.has(i);
+    box.innerHTML=`<h2>Level ${i+1}</h2><p>${levelDate(i)}</p>
+      <div id="board" style="width:${w}px;aspect-ratio:${ratio}"></div>
+      <p id="msg">${already?(CONFIG.captions[i]||''):'Tap two pieces to swap them.'}</p>
+      <button id="act">${already?'Back to map':'Close'}</button>`;
+    const board=$('board'); let order=[0,1,2,3], sel=null;
+    const solved=()=>order.every((v,k)=>v===k);
+    if(already){ order=[0,1,2,3]; } else { do{ order.sort(()=>Math.random()-.5) }while(solved()); }
+    function draw(){
+      board.innerHTML='';
+      order.forEach((piece,pos)=>{
+        const t=document.createElement('div'); t.className='tile'+(sel===pos?' sel':''); t.tabIndex=0;
+        t.style.backgroundImage=`url("${src}"),${FALLBACK}`;
+        t.style.backgroundPosition=`${(piece%2)*100}% ${Math.floor(piece/2)*100}%`;
+        const pick=()=>{
+          if(solved()) return;
+          if(sel===null) sel=pos; else { [order[sel],order[pos]]=[order[pos],order[sel]]; sel=null; }
+          draw();
+          if(solved()) win();
+        };
+        t.onclick=pick; t.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();pick()}};
+        board.appendChild(t);
+      });
+      board.classList.toggle('done',solved());
+    }
+    function win(){
+      $('msg').textContent=CONFIG.captions[i]||'Level cleared! ⭐⭐⭐';
+      const a=$('act'); a.textContent='Clear level';
+      a.onclick=()=>{ cleared.add(i); closeModal(); if(cleared.size===11){ show('s-q'); confetti(); } else buildMap(); };
+    }
+    $('act').onclick=closeModal;
+    draw(); if(already) board.classList.add('done');
+    $('modal').classList.add('on');
+  }
+}
+function closeModal(){ $('modal').classList.remove('on'); }
+
+/* ---- 4. The question ---- */
+$('cryPhoto').src = CONFIG.cryingPhoto;
+$('no').onclick = () => show('s-ahh');
+$('yes').onclick = () => { $('cat').src=CONFIG.catGif; show('s-final'); confetti(); };
+
+function startAhh(){
+  const words=['AHHHHH','AHHH','AHHHHHHH','AHH'], cols=['#ff9aa8','#ffd9a6','#fff','#5ce1c6'];
+  const spawn=()=>{
+    const a=document.createElement('div'); a.className='ah'; a.textContent=words[Math.random()*4|0];
+    a.style.left=rand(2,80)+'vw'; a.style.top=rand(10,85)+'vh';
+    a.style.fontSize=rand(2,5.5)+'rem'; a.style.color=cols[Math.random()*4|0];
+    document.body.appendChild(a); setTimeout(()=>a.remove(),2500);
+  };
+  spawn(); ahhTimer=setInterval(spawn,350);
+  const h=$('heart'); h.style.left=rand(8,88)+'vw'; h.style.top=rand(12,85)+'vh'; h.hidden=false;
+  h.onclick=()=>show('s-q');
+}
+</script>
+</body>
+</html>
